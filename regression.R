@@ -1,8 +1,38 @@
 library(jtools)
 
 county_data <- read.csv("agglomerated/county_dataset.csv")
+county_data$caserate = county_data$X12.31.2020_cases/county_data$population*100000
+county_data$deathrate = county_data$X12.31.2020_deaths/county_data$population*100000
+county_data$elderly = county_data$X60older/county_data$population
+county_data$icu_rate = county_data$icus/county_data$population
 
-cor(county_data$maskuse, county_data$per_dem_2020)
+county_data
+linear.1 <- lm(dem_caserate~ per_dem_2020 + maskuse + X60older/population + density + total_deaths/population + lattitude + distance_to_work + per_capita_income + median_household + black + hispanic + bachelors + poverty + tests,
+               data=county_data)
+summ(linear.1)
+
+linear.2 <- lm(dem_caserate ~ per_dem_2020 + distance_to_work,
+               data=county_data)
+
+linear.3 <- lm(deathrate/caserate ~ black + bachelors +  density + elderly + icu_rate,
+               data=county_data)
+summ(linear.3)
+
+ggplot(county_data,
+       aes(x=deathrate/caserate,
+           y=icu_rate)) +
+  geom_point() +
+  geom_smooth(method="lm", se=F, col="black")
+
+
+
+library(ggiraph)
+library(ggiraphExtra)
+library(plyr)
+library(ggplot2)
+ggPredict(linear.2,se=TRUE,interactive=TRUE)
+
+
 
 data <- read.csv("sources/covid.csv")
 data$Income = as.numeric(data$Income)
