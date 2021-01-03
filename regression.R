@@ -1,5 +1,9 @@
 library(jtools)
 
+county_data <- read.csv("agglomerated/county_dataset.csv")
+
+cor(county_data$maskuse, county_data$per_dem_2020)
+
 data <- read.csv("sources/covid.csv")
 data$Income = as.numeric(data$Income)
 data$Density = as.numeric(data$Density)
