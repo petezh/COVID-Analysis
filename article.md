@@ -126,9 +126,7 @@ I used the following regression models:
 5. `dec_deaths` ~ `county_margin` + `state_margin` + `county_margin` * `state_margin`
 6. `dec_deaths` ~ `county_margin` + `maskuse` + `mobility` + `icu_rate`
 
-
-
-
+Model 1 and Model 4 are designed to assess the marginal value that election results add after controlling for related features. Model 2 and Model 5 will test for the relative influence of county and state election results, with an interaction variable. Model 3 and Model 6 assess the influence of pandemic response measures in explaining the relationship.
 
 The results were as follows:
 
@@ -183,14 +181,22 @@ The results were as follows:
 
 
 
+1. Surprisingly few features influenced outcomes. Density, racial demographics, and state location generally had little to no significance.
+2. County margin remains highly significant in all models.
+
+2. State and county margins have roughly equal influence. This makes sense, given the structure of power. Even if a given county upsetti, politicans at the state level...
+3. Mask use explains much of the difference. Surprisingly, mobility and ICU availability have little to no impact
+4. 
+
 
 
 #### Conclusion
 
-- counterintuitive insiginficant variables: elderly, density, ICU. even race/education/income played much smaller role.
-- driven almost entirely by democrats.
 
-https://www.tandfonline.com/doi/full/10.1080/01944363.2020.1777891
+
+many limitations---
+
+- some data were not as granula as we'd like
 
 
 
