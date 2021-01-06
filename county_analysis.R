@@ -1,4 +1,4 @@
-# Partisanship and COVID analysis
+# Partisanship and COVID plots and regression analysis
 # Author: Peter Zhang
 
 # imports
@@ -14,7 +14,7 @@ library("pander")
 county_data <- read.csv("agglomerated/county_dataset.csv")
 
 # create summary table
-kable(summarize(county_data))
+kable(summarize(county_data), digits=5)
 
 # get monthly case/death rates
 county_data$apr_cases = (county_data$X4.30.2020_cases-county_data$X3.31.2020_cases)/county_data$population*100000
@@ -27,8 +27,12 @@ county_data$dec_cases = (county_data$X12.31.2020_cases-county_data$X11.30.2020_c
 county_data$dec_deaths = (county_data$X12.31.2020_deaths-county_data$X11.30.2020_deaths)/county_data$population*100000
 county_data$county_margin = county_data$per_dem_2020 - county_data$per_gop_2020
 
+# proportionize
+county_data$trips = county_data$trips/county_data$population
+county_data$at_home = county_data$at_home/county_data$population
+
 # april plot
-apr_case_plot <- ggplot(data = county_data,
+apr_case_plot <- ggplot(data = subset(county_data, apr_cases >= 0, select=c(county_margin, apr_cases)),
                         aes(x = county_margin,
                             y = apr_cases,
                             color = county_margin)) +
@@ -41,7 +45,7 @@ apr_case_plot <- ggplot(data = county_data,
   geom_smooth(method="lm", se=F, col="black")
 
 # june plot
-jun_case_plot <- ggplot(data = county_data,
+jun_case_plot <- ggplot(data = subset(county_data, jun_cases >= 0, select=c(county_margin, jun_cases)),
                         aes(x = county_margin,
                             y = jun_cases,
                             color = county_margin)) +
@@ -54,7 +58,7 @@ jun_case_plot <- ggplot(data = county_data,
   geom_smooth(method="lm", se=F, col="black")
 
 # oct plot
-oct_case_plot <- ggplot(data = county_data,
+oct_case_plot <- ggplot(data = subset(county_data, oct_cases >= 0, select=c(county_margin, oct_cases)),
                         aes(x = county_margin,
                             y = oct_cases,
                             color = county_margin)) +
@@ -67,7 +71,7 @@ oct_case_plot <- ggplot(data = county_data,
   geom_smooth(method="lm", se=F, col="black")
 
 # dec plot
-dec_case_plot <- ggplot(data = county_data,
+dec_case_plot <- ggplot(data = subset(county_data, dec_cases >= 0, select=c(county_margin, dec_cases)),
                         aes(x = county_margin,
                             y = dec_cases,
                             color = county_margin)) +
@@ -80,13 +84,16 @@ dec_case_plot <- ggplot(data = county_data,
   geom_smooth(method="lm", se=F, col="black")
 
 
-# combine
+# combine and write
 ggarrange(apr_case_plot,
           jun_case_plot,
           oct_case_plot,
           dec_case_plot,
           nrow=2, ncol=2,
-          common.legend = TRUE, legend="bottom")
+          common.legend = TRUE, legend="bottom")  %>%
+  ggexport(filename = "resources/month_cases.png",
+           width=600,
+           height=650)
 
 # correlations
 cor(county_data$apr_cases, county_data$county_margin)
@@ -96,7 +103,7 @@ cor(county_data$dec_cases, county_data$county_margin)
 
 
 # jun plot
-jun_death_plot <- ggplot(data = county_data,
+jun_death_plot <- ggplot(data = subset(county_data, jun_deaths >= 0, select=c(county_margin, jun_deaths)),
                          aes(x = county_margin,
                              y = jun_deaths,
                              color = county_margin)) +
@@ -110,7 +117,7 @@ jun_death_plot <- ggplot(data = county_data,
 
 
 # apr plot
-oct_death_plot <- ggplot(data = county_data,
+oct_death_plot <- ggplot(data = subset(county_data, oct_deaths >= 0, select=c(county_margin, oct_deaths)),
                          aes(x = county_margin,
                              y = oct_deaths,
                              color = county_margin)) +
@@ -123,7 +130,7 @@ oct_death_plot <- ggplot(data = county_data,
   geom_smooth(method="lm", se=F, col="black")
 
 # dec plot
-dec_death_plot <- ggplot(data = county_data,
+dec_death_plot <- ggplot(data =  subset(county_data, dec_deaths >= 0, select=c(county_margin, dec_deaths)),
                          aes(x = county_margin,
                              y = dec_deaths,
                              color = county_margin)) +
@@ -135,12 +142,15 @@ dec_death_plot <- ggplot(data = county_data,
   theme(legend.position = "none")+
   geom_smooth(method="lm", se=F, col="black")
 
-# combine
+# combine and write
 ggarrange(jun_death_plot,
           oct_death_plot,
           dec_death_plot,
           nrow=2, ncol=2,
-          common.legend = TRUE, legend="bottom")
+          common.legend = TRUE, legend="bottom")  %>%
+  ggexport(filename = "resources/month_deaths.png",
+           width=600,
+           height=650)
 
 # correlations
 cor(county_data$jun_deaths, county_data$county_margin)
@@ -156,13 +166,13 @@ cor(county_data$dec_cases, county_data$state_margin)
 cor(county_data$dec_deaths, county_data$state_margin)
 
 # mobility vs cases
-mobility_plot <- ggplot(data = subset(county_data, mobility < 200),
-                         aes(x = mobility,
+mobility_plot <- ggplot(data = county_data,
+                         aes(x = trips,
                              y = dec_cases,
                              color = county_margin)) +
   geom_point() +
   ggtitle("Dec. Cases and Mobility")+
-  xlab("Mobility (kilometers)") +
+  xlab("Trips Per Person") +
   ylab("Cases per 100K") +
   scale_color_gradient2(name="Biden Margin",low = "red", mid="grey", high = "blue",  midpoint = 0) +
   theme(legend.position = "none")+
@@ -170,68 +180,105 @@ mobility_plot <- ggplot(data = subset(county_data, mobility < 200),
 
 # mask use
 maskuse_plot <- ggplot(data = subset(county_data),
-       aes(x = maskuse,
+       aes(x = mask_use,
            y = dec_cases,
            color = county_margin)) +
   geom_point() +
   ggtitle("Dec. Cases and Masking")+
-  xlab("Mask Use (proportion)") +
+  xlab("Mask Use Proportion") +
   ylab("Cases per 100K") +
   scale_color_gradient2(name="Biden Margin",low = "red", mid="grey", high = "blue",  midpoint = 0) +
   theme(legend.position = "none")+
   geom_smooth(method="lm", se=F, col="black")
 
-# combine
+
+# combine and write
 ggarrange(mobility_plot,
           maskuse_plot,
           nrow=1,
-          common.legend = TRUE, legend="bottom")
+          common.legend = TRUE, legend="bottom")  %>%
+  ggexport(filename = "resources/mobility_maskuse.png",
+           width=600,
+           height=350)
+
 
 # measures
-cor(county_data$mobility, county_data$dec_cases)
-cor(county_data$maskuse, county_data$dec_cases)
+cor(county_data$trips/county_data$population, county_data$dec_cases)
+cor(county_data$mask_use, county_data$dec_cases)
 
 # features
-county_data$elderly = county_data$X60older/county_data$population
+county_data$elderly = county_data$X60older/county_data$population*100
 county_data$icu_rate = county_data$icus/county_data$population*100000
 county_data$income = county_data$median_household
 county_data$work_distance = county_data$distance_to_work
 
 # cases linear models
-lm_cases_1 <- lm(dec_cases ~ county_margin + tests + density +
+lm_cases_1 <- lm(dec_cases ~ tests + density +
                income + elderly + black + white +
                  asian + hispanic + lattitude + work_distance + household_size,
                data = county_data)
 summ(lm_cases_1)
 
-lm_cases_2 <- lm(dec_cases ~ county_margin + state_margin + county_margin * state_margin,
-               data=county_data)
+lm_cases_2 <- lm(dec_cases ~ county_margin + tests + density +
+                   income + elderly + black + white +
+                   asian + hispanic + lattitude + work_distance + household_size,
+                 data = county_data)
 summ(lm_cases_2)
 
-lm_cases_3 <- lm(dec_cases ~ county_margin + maskuse + mobility,
-                 data=county_data)
+
+lm_cases_3 <- lm(dec_cases ~ county_margin + state_margin + county_margin * state_margin+
+                   tests + density +
+                   income + elderly + black + white +
+                   asian + hispanic + lattitude + work_distance + household_size,
+               data=county_data)
 summ(lm_cases_3)
 
+lm_cases_4 <- lm(dec_cases ~ county_margin +  mask_use + trips + at_home +
+                   tests + density +
+                   income + elderly + black + white +
+                   asian + hispanic + lattitude + work_distance + household_size,
+                 data=county_data)
+summ(lm_cases_4)
+
+# write to html
+cases_table <- mtable('Model 1' = lm_cases_1,
+             'Model 2' = lm_cases_2,
+             'Model 3' = lm_cases_3,
+             'Model 4' = lm_cases_4,
+             summary.stats = c('R-squared','F','p'))
+write_html(cases_table, "resources/case_reg.html")
+
+
 # deaths linear models
-lm_deaths_1 <- lm(dec_deaths ~ county_margin + tests + density +
+lm_deaths_1 <- lm(dec_deaths ~ density +
+                    income + elderly + black + white +
+                    asian + hispanic + lattitude + work_distance + household_size,
+                  data = county_data)
+summ(lm_deaths_1)
+
+
+lm_deaths_2 <- lm(dec_deaths ~ county_margin + density +
                  income + elderly + black + white +
                  asian + hispanic + lattitude + work_distance + household_size,
                data = county_data)
-summ(lm_deaths_1)
-
-lm_deaths_2 <- lm(dec_deaths ~ county_margin + state_margin + county_margin * state_margin,
-                 data=county_data)
 summ(lm_deaths_2)
 
-lm_deaths_3 <- lm(dec_deaths ~ county_margin + maskuse + mobility + icu_rate,
+lm_deaths_3 <- lm(dec_deaths ~ county_margin + state_margin + county_margin * state_margin+ density +
+                    income + elderly + black + white +
+                    asian + hispanic + lattitude + work_distance + household_size,
                  data=county_data)
 summ(lm_deaths_3)
 
-mt <- mtable('Model 1' = lm_cases_1,
-       'Model 2' = lm_cases_2,
-       'Model 3' = lm_cases_3,
-       'Model 4' = lm_deaths_1,
-       'Model 5' = lm_deaths_2,
-       'Model 6' = lm_deaths_3,
-       summary.stats = c('R-squared','F','p','N'))
-write_html(mt, "mt.html")
+lm_deaths_4 <- lm(dec_deaths ~ county_margin + mask_use + trips + at_home + icu_rate+ density +
+                    income + elderly + black + white +
+                    asian + hispanic + lattitude + work_distance + household_size,
+                 data=county_data)
+summ(lm_deaths_4)
+
+# write to html
+deaths_table <- mtable('Model 5' = lm_deaths_1,
+                      'Model 6' = lm_deaths_2,
+                      'Model 7' = lm_deaths_3,
+                      'Model 8' = lm_deaths_4,
+                      summary.stats = c('R-squared','F','p'))
+write_html(deaths_table, "resources/death_reg.html")
