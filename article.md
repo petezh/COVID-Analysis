@@ -273,6 +273,6 @@ There are several avenues for future research:
 
 Thanks to the those who maintained the datasets that this analysis used.
 
-[^1]: The class dataset is [here](/resources/class_data.csv) and the associated codebook is [here](resources/class_codebook.csv).
+[^1]: The class dataset is [here](/resources/class_data.csv) and the associated codebook is [here](resources/class_codebook.xlsx).
 [^2]: The data sources and compiler are available in my [repo](https://github.com/petezh/COVID-Analysis) and can be used to compile updated statistics. 
 
