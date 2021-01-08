@@ -214,29 +214,25 @@ county_data$work_distance = county_data$distance_to_work
 
 # cases linear models
 lm_cases_1 <- lm(dec_cases ~ tests + density +
-               income + elderly + black + white +
-                 asian + hispanic + lattitude + work_distance + household_size,
+               income + elderly + black + hispanic + lattitude + work_distance + household_size,
                data = county_data)
 summ(lm_cases_1)
 
 lm_cases_2 <- lm(dec_cases ~ county_margin + tests + density +
-                   income + elderly + black + white +
-                   asian + hispanic + lattitude + work_distance + household_size,
+                   income + elderly + black + hispanic + lattitude + work_distance + household_size,
                  data = county_data)
 summ(lm_cases_2)
 
 
 lm_cases_3 <- lm(dec_cases ~ county_margin + state_margin + county_margin * state_margin+
                    tests + density +
-                   income + elderly + black + white +
-                   asian + hispanic + lattitude + work_distance + household_size,
+                   income + elderly + black +  hispanic + lattitude + work_distance + household_size,
                data=county_data)
 summ(lm_cases_3)
 
 lm_cases_4 <- lm(dec_cases ~ county_margin +  mask_use + trips + at_home +
                    tests + density +
-                   income + elderly + black + white +
-                   asian + hispanic + lattitude + work_distance + household_size,
+                   income + elderly + black + hispanic + lattitude + work_distance + household_size,
                  data=county_data)
 summ(lm_cases_4)
 
@@ -245,33 +241,29 @@ cases_table <- mtable('Model 1' = lm_cases_1,
              'Model 2' = lm_cases_2,
              'Model 3' = lm_cases_3,
              'Model 4' = lm_cases_4,
-             summary.stats = c('R-squared','F','p'))
+             summary.stats = c('R-squared', 'adj. R-squared', 'F','p'))
 write_html(cases_table, "resources/case_reg.html")
 
 
 # deaths linear models
 lm_deaths_1 <- lm(dec_deaths ~ density +
-                    income + elderly + black + white +
-                    asian + hispanic + lattitude + work_distance + household_size,
+                    income + elderly + black + hispanic + lattitude + work_distance + household_size,
                   data = county_data)
 summ(lm_deaths_1)
 
 
 lm_deaths_2 <- lm(dec_deaths ~ county_margin + density +
-                 income + elderly + black + white +
-                 asian + hispanic + lattitude + work_distance + household_size,
+                 income + elderly + black  + hispanic + lattitude + work_distance + household_size,
                data = county_data)
 summ(lm_deaths_2)
 
 lm_deaths_3 <- lm(dec_deaths ~ county_margin + state_margin + county_margin * state_margin+ density +
-                    income + elderly + black + white +
-                    asian + hispanic + lattitude + work_distance + household_size,
+                    income + elderly + black + hispanic + lattitude + work_distance + household_size,
                  data=county_data)
 summ(lm_deaths_3)
 
 lm_deaths_4 <- lm(dec_deaths ~ county_margin + mask_use + trips + at_home + icu_rate+ density +
-                    income + elderly + black + white +
-                    asian + hispanic + lattitude + work_distance + household_size,
+                    income + elderly + black + hispanic + lattitude + work_distance + household_size,
                  data=county_data)
 summ(lm_deaths_4)
 
@@ -280,5 +272,5 @@ deaths_table <- mtable('Model 5' = lm_deaths_1,
                       'Model 6' = lm_deaths_2,
                       'Model 7' = lm_deaths_3,
                       'Model 8' = lm_deaths_4,
-                      summary.stats = c('R-squared','F','p'))
+                      summary.stats = c('R-squared', 'adj. R-squared', 'F','p'))
 write_html(deaths_table, "resources/death_reg.html")
