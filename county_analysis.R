@@ -9,6 +9,7 @@ library("knitr")
 library("papeR")
 library("memisc")
 library("pander")
+library("stargazer")
 
 # read county-level data
 county_data <- read.csv("agglomerated/county_dataset.csv")
@@ -209,7 +210,8 @@ cor(county_data$mask_use, county_data$dec_cases)
 # features
 county_data$elderly = county_data$X60older/county_data$population*100
 county_data$icu_rate = county_data$icus/county_data$population*100000
-county_data$income = county_data$median_household
+county_data$income = county_data$median_household/1000
+county_data$density = county_data$density/1000
 county_data$work_distance = county_data$distance_to_work
 
 # cases linear models
@@ -274,3 +276,41 @@ deaths_table <- mtable('Model 5' = lm_deaths_1,
                       'Model 8' = lm_deaths_4,
                       summary.stats = c('R-squared', 'adj. R-squared', 'F','p'))
 write_html(deaths_table, "resources/death_reg.html")
+
+
+
+
+# cases linear models
+lm_cases_1 <- lm(dec_cases ~ density + income + elderly + black + hispanic,
+                 data = county_data)
+summ(lm_cases_1)
+
+lm_cases_2 <- lm(dec_cases ~ county_margin + density + income + elderly + black + hispanic,
+                 data = county_data)
+summ(lm_cases_2)
+
+
+lm_cases_3 <- lm(dec_cases ~ county_margin + mask_use + trips + density + income + elderly + black + hispanic,
+                 data = county_data)
+summ(lm_cases_3)
+
+
+
+# deaths linear models
+lm_deaths_1 <- lm(dec_deaths ~ density +
+                    income + elderly + black + hispanic,
+                  data = county_data)
+summ(lm_deaths_1)
+
+
+lm_deaths_2 <- lm(dec_deaths ~ county_margin + density +
+                    income + elderly + black  + hispanic,
+                  data = county_data)
+summ(lm_deaths_2)
+
+lm_deaths_3 <- lm(dec_deaths ~ county_margin + density + mask_use + trips +
+                    income + elderly + black + hispanic,
+                  data=county_data)
+summ(lm_deaths_3)
+
+stargazer(lm_cases_1, lm_cases_2, lm_cases_3, lm_deaths_1, lm_deaths_2, lm_deaths_3, digits=2)
